@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { CalendarDays, ClipboardList, LineChart, ShoppingCart, User, Copy, RotateCcw, Utensils, Store } from 'lucide-react';
-import { recipes, mealOptions } from '@/data/recipes';
-import { calculateShopping, days, defaultState, trend } from '@/lib/planner';
-import { fmt } from '@/data/packaging';
+import { recipes, mealOptions } from '../data/recipes';
+import { calculateShopping, days, defaultState, trend } from '../lib/planner';
+import { fmt } from '../data/packaging';
 
 const STORAGE_KEY = 'mealprep-coach-v1-full';
 
