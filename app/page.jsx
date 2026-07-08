@@ -1,26 +1,96 @@
 'use client';
+
 import { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, CheckCircle2, ClipboardList, Copy, Home, LineChart, PackageCheck, RotateCcw, ShoppingCart, Store, Target, Utensils } from 'lucide-react';
-import { recipes, mealOptions } from '../data/recipes';
+import { Home, MessageCircle, CalendarDays, ShoppingCart, LineChart, Send, Copy, RotateCcw, Target, CheckCircle2 } from 'lucide-react';
+import { mealOptions } from '../data/recipes';
 import { calculateShopping, days, defaultState, targetDate, trend } from '../lib/planner';
 import { fmt } from '../data/packaging';
-const STORAGE_KEY = 'mealprep-coach-v1-2';
-function Card({ children, className = '' }) { return <div className={`card ${className}`}>{children}</div>; }
+
+const STORAGE_KEY = 'mealprep-coach-v1-3';
+const foodDb = [
+  ['skyr',200,30], ['kwark',200,28], ['muesli',95,3], ['banaan',110,1], ['appel',85,0],
+  ['ei',75,6], ['kip',250,45], ['rijst',180,4], ['broccoli',70,5], ['tonijn',130,28],
+  ['pasta',230,8], ['zalm',300,32], ['pizza',850,35], ['broodje',420,18], ['salade',350,20],
+  ['cappuccino',80,5], ['latte',140,8], ['wijn',120,0], ['bier',150,1], ['chocolade',250,3], ['shake',120,24]
+];
+
+function estimateFood(text) {
+  const lower = text.toLowerCase();
+  let kcal = 0, protein = 0;
+  const matched = [];
+  for (const [key, k, p] of foodDb) {
+    if (lower.includes(key)) {
+      const re = new RegExp('(\\d+(?:[,.]\\d+)?)\\s*(x|keer|stuks?|glazen?|koppen?)?\\s*' + key);
+      const m = lower.match(re);
+      const mult = m ? Number(m[1].replace(',', '.')) || 1 : 1;
+      kcal += k * mult;
+      protein += p * mult;
+      matched.push(mult > 1 ? `${mult}× ${key}` : key);
+    }
+  }
+  if (!kcal) { kcal = 500; protein = 20; matched.push('algemene maaltijd'); }
+  return { text, kcal: Math.round(kcal), protein: Math.round(protein), matched, date: new Date().toISOString().slice(0,10), time: new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}) };
+}
+
+function Card({ children, className='' }) { return <div className={`card ${className}`}>{children}</div>; }
 function Stat({ label, value }) { return <div className="stat"><span>{label}</span><b>{value}</b></div>; }
-function ProgressBar({ value }) { return <div className="progress"><div style={{ width: `${Math.min(100, Math.max(0, value))}%` }} /></div>; }
-export default function App() {
-  const [tab, setTab] = useState('dashboard'); const [state, setState] = useState(defaultState); const [newWeight, setNewWeight] = useState(''); const [toast, setToast] = useState('');
-  useEffect(() => { const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('mealprep-coach-v1-1') || localStorage.getItem('mealprep-coach-v1-full'); if (saved) { try { const parsed = JSON.parse(saved); setState({ ...defaultState, ...parsed, profile: { ...defaultState.profile, ...(parsed.profile || {}), startWeight: parsed.profile?.startWeight || parsed.weights?.[parsed.weights.length - 1]?.weight || parsed.profile?.weight || 75 }, pantry: parsed.pantry || {}, checkedItems: parsed.checkedItems || {} }); } catch {} } }, []);
-  useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }, [state]);
-  const shopping = useMemo(() => calculateShopping(state.plan, state.pantry), [state.plan, state.pantry]); const weightTrend = useMemo(() => trend(state.weights), [state.weights]);
-  const profile = state.profile; const startWeight = Number(profile.startWeight || 75); const remaining = Math.max(0, profile.weight - profile.goal); const totalGoal = Math.max(0.1, startWeight - profile.goal); const lost = Math.max(0, startWeight - profile.weight); const progress = Math.min(100, (lost / totalGoal) * 100); const dailyDeficit = Math.max(0, profile.maintenance - profile.kcal); const weeklyLossExpected = dailyDeficit ? (dailyDeficit * 7) / 7700 : 0; const predictedWeeks = weeklyLossExpected ? Math.ceil(remaining / weeklyLossExpected) : null; const avgLunchDinnerKcal = Math.round(shopping.kcal / 7); const checkedCount = Object.entries(state.checkedItems || {}).filter(([key, val]) => val && shopping.adjustedTotals[key] > 0).length; const totalItems = Object.values(shopping.adjustedTotals).filter(v => v > 0).length; const shopProgress = totalItems ? Math.round((checkedCount / totalItems) * 100) : 100; const pantryCount = Object.values(state.pantry || {}).filter(v => Number(v) > 0).length;
-  function showToast(message) { setToast(message); setTimeout(() => setToast(''), 1400); } function updateProfile(field, value) { setState(s => ({ ...s, profile: { ...s.profile, [field]: field === 'name' ? value : Number(value) }})); } function updateMeal(day, index, value) { setState(s => ({ ...s, plan: { ...s.plan, [day]: s.plan[day].map((m, i) => i === index ? value : m) }})); } function addWeight() { const weight = Number(newWeight); if (!weight) return; setState(s => ({ ...s, profile: { ...s.profile, weight }, weights: [{ date: new Date().toISOString().slice(0,10), weight }, ...s.weights] })); setNewWeight(''); showToast('Gewicht opgeslagen'); } async function copy(text) { await navigator.clipboard.writeText(text); showToast('Gekopieerd'); } function toggleChecked(key) { setState(s => ({ ...s, checkedItems: { ...s.checkedItems, [key]: !s.checkedItems?.[key] }})); } function updatePantry(key, value) { setState(s => ({ ...s, pantry: { ...s.pantry, [key]: value }})); }
-  const nav = [['dashboard', Home, 'Home'], ['planner', CalendarDays, 'Menu'], ['recipes', Utensils, 'Recepten'], ['shopping', ShoppingCart, 'Lijst'], ['analysis', LineChart, 'Analyse']]; const coachMessage = `Je boodschappenlijst houdt nu rekening met wat je in huis hebt. Vul bij “In huis” hoeveelheden in, dan trekt de app dit automatisch af.`;
-  return <main className="app"><header><div><p className="eyebrow">Mealprep Coach v1.2</p><h1>Goedemorgen {profile.name || 'Dominique'} 👋</h1></div><button className="tiny" onClick={() => { setState(defaultState); showToast('Reset'); }}><RotateCcw size={16}/> Reset</button></header>
-  {tab === 'dashboard' && <section><Card className="hero"><div className="heroTop"><div><p className="mutedSmall">Huidig gewicht</p><div className="bigWeight">{fmt(profile.weight)} kg</div></div><div className="goalBadge"><Target size={17}/> Doel {fmt(profile.goal)} kg</div></div><ProgressBar value={progress} /><div className="heroMeta"><span>Nog {fmt(remaining)} kg</span><span>{fmt(lost)} kg kwijt · {Math.round(progress)}%</span></div></Card><div className="coach"><CheckCircle2 size={20}/><p>{coachMessage}</p></div><div className="stats"><Stat label="Verwachte datum" value={targetDate(predictedWeeks)} /><Stat label="Verwacht verlies" value={`${fmt(weeklyLossExpected)} kg/week`} /><Stat label="Lunch+diner" value={`${avgLunchDinnerKcal} kcal/dag`} /><Stat label="In huis ingevuld" value={`${pantryCount} items`} /></div><Card><h2>Vandaag</h2><div className="todayGrid"><div><span>🔥</span><b>{profile.kcal} kcal</b><small>dagdoel</small></div><div><span>🍗</span><b>{profile.protein} g</b><small>eiwit</small></div><div><span>💧</span><b>{profile.water} L</b><small>water</small></div><div><span>🛒</span><b>{shopProgress}%</b><small>boodschappen</small></div></div></Card><Card><h2>Profiel aanpassen</h2><div className="grid"><label>Naam<input value={profile.name || ''} onChange={e => updateProfile('name', e.target.value)} /></label><label>Startgewicht<input type="number" value={profile.startWeight} onChange={e => updateProfile('startWeight', e.target.value)} /></label><label>Gewicht<input type="number" value={profile.weight} onChange={e => updateProfile('weight', e.target.value)} /></label><label>Doel<input type="number" value={profile.goal} onChange={e => updateProfile('goal', e.target.value)} /></label><label>Calorieën<input type="number" value={profile.kcal} onChange={e => updateProfile('kcal', e.target.value)} /></label><label>Eiwit<input type="number" value={profile.protein} onChange={e => updateProfile('protein', e.target.value)} /></label><label>Onderhoud<input type="number" value={profile.maintenance} onChange={e => updateProfile('maintenance', e.target.value)} /></label></div></Card></section>}
-  {tab === 'planner' && <section><Card><h2>Weekplanner</h2>{days.map(day => { const total = shopping.dayTotals[day]; return <div className="day" key={day}><div className="dayHead"><b>{day}</b><span>{total.kcal} kcal · {total.protein} g eiwit</span></div><div className="mealgrid"><select value={state.plan[day][0]} onChange={e => updateMeal(day, 0, e.target.value)}>{mealOptions.lunch.map(option => <option key={option}>{option}</option>)}</select><select value={state.plan[day][1]} onChange={e => updateMeal(day, 1, e.target.value)}>{mealOptions.dinner.map(option => <option key={option}>{option}</option>)}</select></div></div> })}</Card></section>}
-  {tab === 'recipes' && <section><Card><h2>Recepten</h2><p className="muted">Compacte set mealprep-recepten. De boodschappenlijst wordt automatisch bijgewerkt.</p>{recipes.map(recipe => <details className="recipe" key={recipe.id}><summary><span>{recipe.name}</span><small>{recipe.kcal} kcal · {recipe.protein} g</small></summary><p>{recipe.prep}</p><ul>{recipe.ingredients.map(([name, amount, unit]) => <li key={name}>{fmt(amount)} {unit} {name}</li>)}</ul></details>)}</Card></section>}
-  {tab === 'shopping' && <section><Card className="shopSummary"><h2><ClipboardList size={20}/> Boodschappen</h2><div className="shopStatus"><span>{checkedCount} van {totalItems} nodig-items afgevinkt</span><b>{shopProgress}%</b></div><ProgressBar value={shopProgress} /></Card><Card><h2><PackageCheck size={20}/> In huis</h2><p className="muted">Vul in wat je al hebt. De app trekt dit af van je boodschappenlijst en Picnic-lijst.</p>{['Vlees/vis','Zuivel','Koolhydraten','Groente','Fruit','Sauzen','Overig'].map(cat => shopping.grouped[cat] && <div key={cat}><h3>{cat}</h3>{shopping.grouped[cat].map(item => <div className="pantryRow" key={item.key}><span>{item.name}<small>{fmt(item.amount)} {item.unit} nodig</small></span><input type="number" placeholder={`0 ${item.unit}`} value={state.pantry?.[item.key] || ''} onChange={e => updatePantry(item.key, e.target.value)} /></div>)}</div>)}</Card><Card><h2>Boodschappenlijst</h2>{['Vlees/vis','Zuivel','Koolhydraten','Groente','Fruit','Sauzen','Overig'].map(cat => shopping.grouped[cat] && <div key={cat}><h3>{cat}</h3>{shopping.grouped[cat].map(item => <label className={`check ${item.needed === 0 ? 'enough' : ''}`} key={item.key}><input type="checkbox" disabled={item.needed === 0} checked={item.needed === 0 || !!state.checkedItems?.[item.key]} onChange={() => toggleChecked(item.key)} /><span>{item.line}</span></label>)}</div>)}</Card><Card><h2><Store size={19}/> Picnic kopieerlijst</h2><textarea readOnly value={shopping.picnicText} /><button onClick={() => copy(shopping.picnicText)}><Copy size={18}/> Kopieer voor Picnic</button></Card></section>}
-  {tab === 'analysis' && <section><Card><h2>Analyse</h2><div className="stats single"><Stat label="Dagtekort" value={`± ${dailyDeficit} kcal`} /><Stat label="Weektekort" value={`± ${dailyDeficit * 7} kcal`} /><Stat label="Verwacht verlies" value={`± ${fmt(weeklyLossExpected)} kg/week`} /><Stat label="Richting doel" value={targetDate(predictedWeeks)} /></div>{weightTrend && <p className="note">Werkelijke trend: {fmt(Math.abs(weightTrend.weekly))} kg per week {weightTrend.weekly < 0 ? 'omlaag' : 'omhoog'}.</p>}</Card><Card><h2>Gewicht bijhouden</h2><div className="inline"><input placeholder="bijv. 74.6" value={newWeight} onChange={e => setNewWeight(e.target.value)} /><button onClick={addWeight}>Toevoegen</button></div><div className="history">{state.weights.map((item, index) => <p key={index}>{item.date}: <b>{fmt(item.weight)} kg</b></p>)}</div></Card></section>}
-  <nav>{nav.map(([id, Icon, label]) => <button key={id} className={tab === id ? 'active' : ''} onClick={() => setTab(id)}><Icon size={19}/><span>{label}</span></button>)}</nav>{toast && <div className="toast">{toast}</div>}</main>;
+function ProgressBar({ value }) { return <div className="progress"><div style={{width:`${Math.min(100,Math.max(0,value))}%`}} /></div>; }
+
+export default function App(){
+  const [tab,setTab]=useState('dashboard');
+  const [state,setState]=useState(defaultState);
+  const [coachText,setCoachText]=useState('');
+  const [pending,setPending]=useState(null);
+  const [newWeight,setNewWeight]=useState('');
+  const [toast,setToast]=useState('');
+
+  useEffect(()=>{const saved=localStorage.getItem(STORAGE_KEY)||localStorage.getItem('mealprep-coach-v1-2')||localStorage.getItem('mealprep-coach-v1-1'); if(saved){try{const p=JSON.parse(saved); setState({...defaultState,...p, profile:{...defaultState.profile,...(p.profile||{})}, foodLog:p.foodLog||[], pantry:p.pantry||{}, checkedItems:p.checkedItems||{}})}catch{}}},[]);
+  useEffect(()=>{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))},[state]);
+
+  const shopping=useMemo(()=>calculateShopping(state.plan,state.pantry),[state.plan,state.pantry]);
+  const today=new Date().toISOString().slice(0,10);
+  const todayLog=(state.foodLog||[]).filter(x=>x.date===today);
+  const eatenKcal=todayLog.reduce((s,x)=>s+x.kcal,0);
+  const eatenProtein=todayLog.reduce((s,x)=>s+x.protein,0);
+  const profile=state.profile;
+  const startWeight=Number(profile.startWeight||75);
+  const lost=Math.max(0,startWeight-profile.weight);
+  const remaining=Math.max(0,profile.weight-profile.goal);
+  const progress=(lost/Math.max(.1,startWeight-profile.goal))*100;
+  const dailyDeficit=Math.max(0,profile.maintenance-profile.kcal);
+  const weeklyLoss=(dailyDeficit*7)/7700;
+  const predictedWeeks=weeklyLoss?Math.ceil(remaining/weeklyLoss):null;
+  const weightTrend=trend(state.weights);
+  const checkedCount=Object.values(state.checkedItems||{}).filter(Boolean).length;
+  const totalItems=Object.values(shopping.adjustedTotals||{}).filter(v=>v>0).length;
+  const shopProgress=totalItems?Math.round(checkedCount/totalItems*100):100;
+
+  function showToast(t){setToast(t);setTimeout(()=>setToast(''),1400)}
+  function updateProfile(field,value){setState(s=>({...s,profile:{...s.profile,[field]:field==='name'?value:Number(value)}}))}
+  function updateMeal(day,index,value){setState(s=>({...s,plan:{...s.plan,[day]:s.plan[day].map((m,i)=>i===index?value:m)}}))}
+  function updatePantry(key,value){setState(s=>({...s,pantry:{...s.pantry,[key]:value}}))}
+  function toggleChecked(key){setState(s=>({...s,checkedItems:{...s.checkedItems,[key]:!s.checkedItems?.[key]}}))}
+  async function copy(text){await navigator.clipboard.writeText(text);showToast('Gekopieerd')}
+  function runCoach(){if(!coachText.trim())return; setPending(estimateFood(coachText)); setCoachText('')}
+  function addEstimate(){if(!pending)return; setState(s=>({...s,foodLog:[pending,...(s.foodLog||[])]})); setPending(null); showToast('Toegevoegd')}
+  function deleteLog(i){const item=todayLog[i]; setState(s=>({...s,foodLog:s.foodLog.filter(x=>x!==item)}))}
+  function addWeight(){const w=Number(newWeight); if(!w)return; setState(s=>({...s,profile:{...s.profile,weight:w},weights:[{date:today,weight:w},...s.weights]})); setNewWeight(''); showToast('Gewicht opgeslagen')}
+
+  const nav=[['dashboard',Home,'Home'],['coach',MessageCircle,'Coach'],['planner',CalendarDays,'Menu'],['shopping',ShoppingCart,'Lijst'],['analysis',LineChart,'Analyse']];
+
+  return <main className="app">
+    <header><div><p className="eyebrow">Mealprep Coach v1.3</p><h1>Goedemorgen {profile.name||'Dominique'} 👋</h1></div><button className="tiny" onClick={()=>{setState(defaultState);showToast('Reset')}}><RotateCcw size={16}/> Reset</button></header>
+
+    {tab==='dashboard'&&<section><Card className="hero"><div className="heroTop"><div><p className="mutedSmall">Huidig gewicht</p><div className="bigWeight">{fmt(profile.weight)} kg</div></div><div className="goalBadge"><Target size={17}/> Doel {fmt(profile.goal)} kg</div></div><ProgressBar value={progress}/><div className="heroMeta"><span>Nog {fmt(remaining)} kg</span><span>{fmt(lost)} kg kwijt · {Math.round(progress)}%</span></div></Card><div className="coach"><CheckCircle2 size={20}/><p>Vandaag gelogd: {eatenKcal} kcal en {eatenProtein} g eiwit. Nog ongeveer {Math.max(0,profile.kcal-eatenKcal)} kcal en {Math.max(0,profile.protein-eatenProtein)} g eiwit.</p></div><div className="stats"><Stat label="Vandaag kcal" value={`${eatenKcal}/${profile.kcal}`}/><Stat label="Vandaag eiwit" value={`${eatenProtein}/${profile.protein} g`}/><Stat label="Verwachte datum" value={targetDate(predictedWeeks)}/><Stat label="Boodschappen" value={`${shopProgress}%`}/></div><Card><h2>Profiel</h2><div className="grid"><label>Naam<input value={profile.name||''} onChange={e=>updateProfile('name',e.target.value)}/></label><label>Startgewicht<input type="number" value={profile.startWeight} onChange={e=>updateProfile('startWeight',e.target.value)}/></label><label>Gewicht<input type="number" value={profile.weight} onChange={e=>updateProfile('weight',e.target.value)}/></label><label>Doel<input type="number" value={profile.goal} onChange={e=>updateProfile('goal',e.target.value)}/></label><label>Calorieën<input type="number" value={profile.kcal} onChange={e=>updateProfile('kcal',e.target.value)}/></label><label>Eiwit<input type="number" value={profile.protein} onChange={e=>updateProfile('protein',e.target.value)}/></label></div></Card></section>}
+
+    {tab==='coach'&&<section><Card><h2><MessageCircle size={20}/> Coach-chat</h2><p className="muted">Typ wat je gegeten hebt. Dit is een lokale schatting; check bij twijfel zelf de verpakking.</p><div className="chatInput"><input placeholder="bijv. 300 g Skyr, 25 g muesli en banaan" value={coachText} onChange={e=>setCoachText(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')runCoach()}}/><button onClick={runCoach}><Send size={18}/></button></div>{pending&&<div className="estimate"><b>Schatting</b><p>{pending.text}</p><div className="estimateStats"><span>{pending.kcal} kcal</span><span>{pending.protein} g eiwit</span></div><small>Herkend: {pending.matched.join(', ')}</small><div className="estimateActions"><button onClick={addEstimate}>Toevoegen</button><button className="secondary" onClick={()=>setPending(null)}>Niet toevoegen</button></div></div>}</Card><Card><h2>Vandaag</h2><div className="stats single"><Stat label="Kcal" value={`${eatenKcal}/${profile.kcal}`}/><Stat label="Eiwit" value={`${eatenProtein}/${profile.protein} g`}/></div><div className="history">{todayLog.length===0?<p className="muted">Nog niets gelogd vandaag.</p>:todayLog.map((item,i)=><p key={i}><b>{item.time}</b> — {item.text}<br/><span>{item.kcal} kcal · {item.protein} g eiwit</span> <button className="linkBtn" onClick={()=>deleteLog(i)}>verwijder</button></p>)}</div></Card></section>}
+
+    {tab==='planner'&&<section><Card><h2>Weekplanner</h2>{days.map(day=>{const total=shopping.dayTotals[day];return <div className="day" key={day}><div className="dayHead"><b>{day}</b><span>{total.kcal} kcal · {total.protein} g eiwit</span></div><div className="mealgrid"><select value={state.plan[day][0]} onChange={e=>updateMeal(day,0,e.target.value)}>{mealOptions.lunch.map(o=><option key={o}>{o}</option>)}</select><select value={state.plan[day][1]} onChange={e=>updateMeal(day,1,e.target.value)}>{mealOptions.dinner.map(o=><option key={o}>{o}</option>)}</select></div></div>})}</Card></section>}
+
+    {tab==='shopping'&&<section><Card className="shopSummary"><h2>Boodschappen</h2><div className="shopStatus"><span>{checkedCount} van {totalItems} nodig-items afgevinkt</span><b>{shopProgress}%</b></div><ProgressBar value={shopProgress}/></Card><Card><h2>In huis</h2><p className="muted">Vul in wat je al hebt. Dit wordt afgetrokken van je boodschappenlijst.</p>{['Vlees/vis','Zuivel','Koolhydraten','Groente','Fruit','Sauzen','Overig'].map(cat=>shopping.grouped[cat]&&<div key={cat}><h3>{cat}</h3>{shopping.grouped[cat].map(item=><div className="pantryRow" key={item.key}><span>{item.name}<small>{fmt(item.amount)} {item.unit} nodig</small></span><input type="number" placeholder={`0 ${item.unit}`} value={state.pantry?.[item.key]||''} onChange={e=>updatePantry(item.key,e.target.value)}/></div>)}</div>)}</Card><Card><h2>Boodschappenlijst</h2>{['Vlees/vis','Zuivel','Koolhydraten','Groente','Fruit','Sauzen','Overig'].map(cat=>shopping.grouped[cat]&&<div key={cat}><h3>{cat}</h3>{shopping.grouped[cat].map(item=><label className={`check ${item.needed===0?'enough':''}`} key={item.key}><input type="checkbox" disabled={item.needed===0} checked={item.needed===0||!!state.checkedItems?.[item.key]} onChange={()=>toggleChecked(item.key)}/><span>{item.line}</span></label>)}</div>)}</Card><Card><h2><Store size={19}/> Picnic kopieerlijst</h2><textarea readOnly value={shopping.picnicText}/><button onClick={()=>copy(shopping.picnicText)}><Copy size={18}/> Kopieer voor Picnic</button></Card></section>}
+
+    {tab==='analysis'&&<section><Card><h2>Analyse</h2><div className="stats single"><Stat label="Dagtekort" value={`± ${dailyDeficit} kcal`}/><Stat label="Weektekort" value={`± ${dailyDeficit*7} kcal`}/><Stat label="Verwacht verlies" value={`± ${fmt(weeklyLoss)} kg/week`}/><Stat label="Richting doel" value={targetDate(predictedWeeks)}/></div>{weightTrend&&<p className="note">Werkelijke trend: {fmt(Math.abs(weightTrend.weekly))} kg per week {weightTrend.weekly<0?'omlaag':'omhoog'}.</p>}</Card><Card><h2>Gewicht bijhouden</h2><div className="inline"><input placeholder="bijv. 74.6" value={newWeight} onChange={e=>setNewWeight(e.target.value)}/><button onClick={addWeight}>Toevoegen</button></div><div className="history">{state.weights.map((item,i)=><p key={i}>{item.date}: <b>{fmt(item.weight)} kg</b></p>)}</div></Card></section>}
+
+    <nav>{nav.map(([id,Icon,label])=><button key={id} className={tab===id?'active':''} onClick={()=>setTab(id)}><Icon size={19}/><span>{label}</span></button>)}</nav>{toast&&<div className="toast">{toast}</div>}
+  </main>
 }
