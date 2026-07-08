@@ -1,0 +1,241 @@
+export const recipes = [
+  {
+    id: 'kip-rijst-bowl',
+    name: 'Kip rijst bowl',
+    type: 'lunch',
+    kcal: 460,
+    protein: 43,
+    prep: 'Bak de kip met knoflook, gember en sojasaus. Kook de rijst. Stoom broccoli en paprika. Verdeel over bakjes.',
+    tags: ['mealprep', 'eiwitrijk'],
+    ingredients: [
+      ['kipfilet',150,'g','Vlees/vis'],
+      ['rijst ongekookt',35,'g','Koolhydraten'],
+      ['broccoli',200,'g','Groente'],
+      ['paprika',0.5,'stuk','Groente'],
+      ['sesamolie',5,'ml','Sauzen']
+    ]
+  },
+  {
+    id: 'tonijn-pasta',
+    name: 'Tonijn pasta',
+    type: 'lunch',
+    kcal: 470,
+    protein: 40,
+    prep: 'Kook de pasta. Meng tonijn met yoghurt of light roomkaas, spinazie en tomaat. Koud of warm te eten.',
+    tags: ['snel', 'mealprep'],
+    ingredients: [
+      ['tonijn uit blik',1,'blik','Vlees/vis'],
+      ['volkoren pasta',60,'g','Koolhydraten'],
+      ['spinazie',100,'g','Groente'],
+      ['cherrytomaten',100,'g','Groente'],
+      ['Griekse yoghurt 0%',50,'g','Zuivel']
+    ]
+  },
+  {
+    id: 'skyr-bowl',
+    name: 'Skyr bowl',
+    type: 'lunch',
+    kcal: 420,
+    protein: 38,
+    prep: 'Doe Skyr in een bakje en voeg fruit, muesli en chiazaad toe. Houd muesli apart als je het knapperig wilt.',
+    tags: ['geen koken', 'zoet'],
+    ingredients: [
+      ['Skyr naturel',300,'g','Zuivel'],
+      ['aardbeien',150,'g','Fruit'],
+      ['blauwe bessen',75,'g','Fruit'],
+      ['muesli',25,'g','Koolhydraten'],
+      ['chiazaad',10,'g','Overig']
+    ]
+  },
+  {
+    id: 'mediterrane-couscous',
+    name: 'Mediterrane couscous',
+    type: 'lunch',
+    kcal: 470,
+    protein: 42,
+    prep: 'Bereid couscous met heet water. Bak kip. Meng met komkommer, tomaat, feta en citroen.',
+    tags: ['fris', 'mealprep'],
+    ingredients: [
+      ['kipfilet',150,'g','Vlees/vis'],
+      ['volkoren couscous',50,'g','Koolhydraten'],
+      ['komkommer',0.5,'stuk','Groente'],
+      ['tomaat',100,'g','Groente'],
+      ['feta light',30,'g','Zuivel']
+    ]
+  },
+  {
+    id: 'kalkoen-wrap-bowl',
+    name: 'Kalkoen wrap bowl',
+    type: 'lunch',
+    kcal: 445,
+    protein: 41,
+    prep: 'Bak kalkoenfilet en snijd in reepjes. Meng met sla, paprika, yoghurt en stukjes wrap.',
+    tags: ['snel', 'licht'],
+    ingredients: [
+      ['kalkoenfilet',150,'g','Vlees/vis'],
+      ['volkoren wrap',1,'stuk','Koolhydraten'],
+      ['sla',100,'g','Groente'],
+      ['paprika',0.5,'stuk','Groente'],
+      ['Griekse yoghurt 0%',50,'g','Zuivel']
+    ]
+  },
+  {
+    id: 'cottage-cheese-salade',
+    name: 'Cottage cheese salade',
+    type: 'lunch',
+    kcal: 410,
+    protein: 39,
+    prep: 'Meng cottage cheese met sla, tomaat, komkommer, ei en crackers. Ideaal voor een lichte dag.',
+    tags: ['geen koken', 'licht'],
+    ingredients: [
+      ['cottage cheese',250,'g','Zuivel'],
+      ['gekookt ei',2,'stuk','Zuivel'],
+      ['komkommer',0.5,'stuk','Groente'],
+      ['tomaat',150,'g','Groente'],
+      ['volkoren crackers',3,'stuk','Koolhydraten']
+    ]
+  },
+  {
+    id: 'kip-teriyaki',
+    name: 'Kip teriyaki',
+    type: 'dinner',
+    kcal: 560,
+    protein: 48,
+    prep: 'Bak kip, voeg teriyakisaus toe en serveer met rijst, broccoli en sperziebonen.',
+    tags: ['warm', 'mealprep'],
+    ingredients: [
+      ['kipfilet',180,'g','Vlees/vis'],
+      ['rijst ongekookt',35,'g','Koolhydraten'],
+      ['broccoli',200,'g','Groente'],
+      ['sperziebonen',100,'g','Groente'],
+      ['teriyakisaus light',20,'ml','Sauzen'],
+      ['sesamolie',5,'ml','Sauzen']
+    ]
+  },
+  {
+    id: 'zalm-oven',
+    name: 'Zalm uit de oven',
+    type: 'dinner',
+    kcal: 600,
+    protein: 38,
+    prep: 'Bak zalm in de oven met citroen. Serveer met krieltjes en broccoli.',
+    tags: ['vis', 'oven'],
+    ingredients: [
+      ['zalm',150,'g','Vlees/vis'],
+      ['krieltjes',200,'g','Koolhydraten'],
+      ['broccoli',250,'g','Groente'],
+      ['olijfolie',5,'ml','Sauzen']
+    ]
+  },
+  {
+    id: 'taco-bowl',
+    name: 'Taco bowl',
+    type: 'dinner',
+    kcal: 560,
+    protein: 45,
+    prep: 'Bak gehakt met kruiden. Serveer met rijst, bonen, paprika, salsa en yoghurt.',
+    tags: ['comfort', 'mealprep'],
+    ingredients: [
+      ['mager rundergehakt',150,'g','Vlees/vis'],
+      ['rijst ongekookt',30,'g','Koolhydraten'],
+      ['paprika',1,'stuk','Groente'],
+      ['kidneybonen',75,'g','Groente'],
+      ['maïs',50,'g','Groente'],
+      ['Griekse yoghurt 0%',50,'g','Zuivel'],
+      ['salsa',50,'g','Sauzen']
+    ]
+  },
+  {
+    id: 'kip-curry',
+    name: 'Kip curry',
+    type: 'dinner',
+    kcal: 540,
+    protein: 45,
+    prep: 'Bak kip met currypasta. Voeg bloemkool, spinazie en light kokosmelk toe. Serveer met rijst.',
+    tags: ['warm', 'mealprep'],
+    ingredients: [
+      ['kipfilet',180,'g','Vlees/vis'],
+      ['bloemkool',0.5,'stuk','Groente'],
+      ['spinazie',100,'g','Groente'],
+      ['light kokosmelk',100,'ml','Sauzen'],
+      ['rijst ongekookt',50,'g','Koolhydraten'],
+      ['currypasta',20,'g','Sauzen']
+    ]
+  },
+  {
+    id: 'italiaanse-kip',
+    name: 'Italiaanse kip',
+    type: 'dinner',
+    kcal: 560,
+    protein: 48,
+    prep: 'Bak kip met courgette en champignons. Voeg tomatensaus toe en serveer met volkoren pasta.',
+    tags: ['pasta', 'mealprep'],
+    ingredients: [
+      ['kipfilet',180,'g','Vlees/vis'],
+      ['volkoren pasta',60,'g','Koolhydraten'],
+      ['courgette',1,'stuk','Groente'],
+      ['champignons',150,'g','Groente'],
+      ['gezeefde tomaten',150,'g','Sauzen'],
+      ['Parmezaanse kaas',10,'g','Zuivel']
+    ]
+  },
+  {
+    id: 'garnalen-noodles',
+    name: 'Garnalen noodles',
+    type: 'dinner',
+    kcal: 525,
+    protein: 43,
+    prep: 'Wok garnalen met groenten en sojasaus. Meng met noodles.',
+    tags: ['vis', 'wok'],
+    ingredients: [
+      ['garnalen',180,'g','Vlees/vis'],
+      ['wokgroente',250,'g','Groente'],
+      ['noodles ongekookt',60,'g','Koolhydraten'],
+      ['sojasaus',20,'ml','Sauzen'],
+      ['sesamolie',5,'ml','Sauzen']
+    ]
+  },
+  {
+    id: 'chili-sin-carne',
+    name: 'Chili sin carne',
+    type: 'dinner',
+    kcal: 510,
+    protein: 32,
+    prep: 'Stoof bonen, tomaat, paprika en kruiden. Serveer met rijst en yoghurt.',
+    tags: ['vegetarisch', 'budget'],
+    ingredients: [
+      ['kidneybonen',150,'g','Groente'],
+      ['zwarte bonen',100,'g','Groente'],
+      ['rijst ongekookt',45,'g','Koolhydraten'],
+      ['paprika',1,'stuk','Groente'],
+      ['gezeefde tomaten',200,'g','Sauzen'],
+      ['Griekse yoghurt 0%',75,'g','Zuivel']
+    ]
+  },
+  {
+    id: 'tofu-roerbak',
+    name: 'Tofu roerbak',
+    type: 'dinner',
+    kcal: 520,
+    protein: 35,
+    prep: 'Bak tofu krokant. Wok groenten en serveer met rijst en sojasaus.',
+    tags: ['vegetarisch', 'wok'],
+    ingredients: [
+      ['tofu',200,'g','Vlees/vis'],
+      ['rijst ongekookt',50,'g','Koolhydraten'],
+      ['wokgroente',300,'g','Groente'],
+      ['sojasaus',20,'ml','Sauzen'],
+      ['sesamolie',5,'ml','Sauzen']
+    ]
+  }
+];
+
+export const mealOptions = {
+  lunch: ['Uit eten / overslaan', ...recipes.filter(r => r.type === 'lunch').map(r => r.name)],
+  dinner: ['Uit eten / overslaan', ...recipes.filter(r => r.type === 'dinner').map(r => r.name)]
+};
+
+export const recipeByName = Object.fromEntries([
+  ['Uit eten / overslaan', { name: 'Uit eten / overslaan', kcal: 0, protein: 0, ingredients: [], prep: '' }],
+  ...recipes.map(r => [r.name, r])
+]);
