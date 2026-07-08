@@ -1,9 +1,8 @@
-# Mealprep Coach 2.1
+# Mealprep Coach 2.2
 
-Nieuwe update:
-- Concrete receptsuggesties in de Coach
-- Receptkaarten met foto's
-- Favorieten
-- “Maak dit” voegt recept toe aan je daglog
-- Macro's: kcal, eiwit, koolhydraten, vetten
-- Voorraad, boodschappenlijst en Picnic-kopieerlijst blijven behouden
+Nieuw:
+- Refresh-knop voor receptsuggesties
+- Spannendere MOB-style recepten
+- Suggesties variëren per refresh
+- Alles blijft lokaal opgeslagen via localStorage
+- Log, profiel, voorraad, favorieten en gewicht blijven bewaard zolang browserdata niet wordt gewist
